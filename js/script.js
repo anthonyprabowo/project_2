@@ -17,10 +17,14 @@ For assistance:
 const studentList = document.querySelector('.student-list');
 const linkList = document.querySelector('.link-list');
 const header = document.querySelector('header');
+const li = linkList.children;
 var htmlPage = "";
 var pageButton = "";
 let start = 0;
 let end = 9;
+let nameArray = [];
+let objArray = [];
+
 
 /*
    Helper Functions
@@ -41,12 +45,28 @@ function generateHTML(obj) {
    `;
 }
 
-function removeActive(arr) {
-   for(let i = 0; i < arr.length; i++) {
-      page[i].className = ""; // remove all class names in the button
+function removeActive() {
+   for(let i = 0; i < li.length; i++) {
+      li[i].children[0].className = ""; // remove all class names in the button
    }
 }
 
+function retrieveData() {
+   for(let i = 0; i < data.length; i++) {
+      let name = "";
+      name = data[i].name.first + " " + data[i].name.last;
+      nameArray.push(name);
+      objArray.push(data[i]);
+   }
+}
+
+function checkLast() {
+   if(objArray.length < end ){
+      end = objArray.length;
+   } else {
+      end = 9;
+   }
+}
 
 /*
 Create the `showPage` function
@@ -56,7 +76,7 @@ This function will create and insert/append the elements needed to display a "pa
 function showPage() {
    htmlPage = ""; // reset html code in every function calls
    for(let i = start; i < end; i++){
-      generateHTML(data[i]); // populate html code with the data
+      generateHTML(objArray[i]); // populate html code with the data
    }
    studentList.innerHTML = htmlPage;
 }
@@ -66,24 +86,20 @@ Create the `addPagination` function
 This function will create and insert/append the elements needed for the pagination buttons
 */
 function addPagination() {
-   let numberOfPage = Math.ceil(data.length / 9); // figuring how many number of page necessary
+   let numberOfPage = Math.ceil(objArray.length / 9); // figuring how many number of page necessary
+   linkList.innerHTML = ""; // clear list inside studentList
+   pageButton = "";
    for(let i = 0; i < numberOfPage; i++){ // generate page numbers based on the numberOfPage
       pageButton += `
       <li>
-         <button class="page-button" type="button">${i + 1}</button> 
+         <button type="button">${i + 1}</button> 
       </li>
       `
    }
    linkList.innerHTML = pageButton;
+   linkList.firstElementChild.children[0].className = 'active';
+   showPage();
 }
-
-
-/* 
-<label for="search" class="student-search">
-            <input id="search" placeholder="Search by name...">
-            <button type="button"><img src="img/icn-search.svg" alt="Search icon"></button>
-</label>
-*/
 
 // SEARCH FUNCTION
 function addSearch() {
@@ -115,46 +131,51 @@ function addSearch() {
 
 // SEARCH FEATURE
 function searchFeature() {
-   for(let i = 0; i < h3s.length; i++) {
-      if(h3s[i].innerText.toLowerCase().includes(search.value.toLowerCase())) {
-         studentCard[i].style.display = 'flex';
+   objArray = [];
+   for(let i = 0; i < nameArray.length; i++) {
+      if(nameArray[i].toLowerCase().includes(search.value.toLowerCase())) {
+         objArray.push(data[i]); // if the search is true, push the object to the new array
       } else {
-         studentCard[i].style.display = 'none';
+         // keep going
       }
    }
+   if(objArray.length < 9){
+      start = 0;
+      end = objArray.length
+   } else {
+      start = 0;
+      end = 9;
+   }
+   removeActive();
+   addPagination();
 }
 
 
 // Call functions ON LOAD
-
-showPage(); // calling function to populate on load
+retrieveData(); // move data to the new array
 addPagination(); // calling function to populate page numbers on load
 addSearch(); // calling function to populate search bar on load
 
-const page = document.querySelectorAll('.page-button');
-const h3s = document.querySelectorAll('h3');
 const search = document.querySelector('#search');
 const studentCard = document.querySelectorAll('.student-item');
-page[0].className = 'active';
 
 
 // EVENT LISTENER
-for(let i = 0; i < page.length; i++){
-   page[i].addEventListener('click', () => {
-      if(i === page.length - 1) {
-         end = data.length - 1; // getting the last index of the array
-         start = ((i + 1) * 9) - 9; // using the same formula as below to get the start index
-         showPage(); // call showPage function to get the new HTML
-         
-      } else {
-         end = (i+1) * 9; // adding 1 to i and multiple it to get the end index
-         start = end - 9; // removing 9 from end to get the start index
-         showPage(); // call showPage function to get the new HTML
-      }
-      removeActive(page);
-      page[i].className = 'active';
-   });
-};
+
+linkList.addEventListener('click', (e) => {
+   const target = e.target;
+   if( target.tagName === 'BUTTON' && target !== linkList.lastElementChild.children[0]) {
+      end = parseInt(target.innerText) * 9;
+      start = end - 9;
+      showPage();
+   } else {
+      end = objArray.length - 1;
+      start = parseInt(target.innerText) * 9 - 9;
+      showPage();
+   }
+   removeActive();
+   target.className = 'active';
+});
 
 search.addEventListener('keyup', searchFeature);
 
