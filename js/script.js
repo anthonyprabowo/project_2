@@ -14,6 +14,7 @@ For assistance:
 /*
    variables
 */
+const mainPage = document.querySelector('.page')
 const studentList = document.querySelector('.student-list');
 const linkList = document.querySelector('.link-list');
 const header = document.querySelector('header');
@@ -21,9 +22,10 @@ const li = linkList.children;
 var htmlPage = "";
 var pageButton = "";
 let start = 0;
-let end = 9;
+let end = 8;
 let nameArray = [];
 let objArray = [];
+let notFound;
 
 
 /*
@@ -60,12 +62,30 @@ function retrieveData() {
    }
 }
 
-function checkLast() {
-   if(objArray.length < end ){
-      end = objArray.length;
-   } else {
-      end = 9;
-   }
+function showNotFound() {
+   const div = document.createElement('div');
+   const h2 = document.createElement('h2');
+   h2.innerHTML = 'No user found! :(';
+   h2.className = 'not-found';
+   div.appendChild(h2);
+   mainPage.appendChild(div);
+   studentList.style.display = 'none';
+   linkList.style.display = 'none';
+}
+
+function showCard() {
+   studentList.style.display = '';
+      linkList.style.display = 'block';
+      if(notFound !== null) {
+         document.querySelector('.not-found').style.display = 'none';
+      }
+      if(objArray.length < 9){
+         start = 0;
+         end = objArray.length - 1
+      } else {
+         start = 0;
+         end = 9;
+      }
 }
 
 /*
@@ -75,7 +95,7 @@ This function will create and insert/append the elements needed to display a "pa
 
 function showPage() {
    htmlPage = ""; // reset html code in every function calls
-   for(let i = start; i < end; i++){
+   for(let i = start; i <= end; i++){
       generateHTML(objArray[i]); // populate html code with the data
    }
    studentList.innerHTML = htmlPage;
@@ -131,23 +151,29 @@ function addSearch() {
 
 // SEARCH FEATURE
 function searchFeature() {
+   notFound = document.querySelector('.not-found');
    objArray = [];
    for(let i = 0; i < nameArray.length; i++) {
       if(nameArray[i].toLowerCase().includes(search.value.toLowerCase())) {
          objArray.push(data[i]); // if the search is true, push the object to the new array
-      } else {
-         // keep going
       }
    }
-   if(objArray.length < 9){
-      start = 0;
-      end = objArray.length
+   if(objArray.length === 0) { // check if no results were found
+      if(notFound === null) { // if notFound class doesn't exist
+         showNotFound(); // create the div and the h2
+      } else {
+         document.querySelector('.not-found').style.display = 'block'; 
+         studentList.style.display = 'none';
+         linkList.style.display = 'none';
+      }
+      
    } else {
-      start = 0;
-      end = 9;
+      showCard();
+      removeActive();
+      addPagination();
    }
-   removeActive();
-   addPagination();
+   
+   
 }
 
 
@@ -165,8 +191,8 @@ const studentCard = document.querySelectorAll('.student-item');
 linkList.addEventListener('click', (e) => {
    const target = e.target;
    if( target.tagName === 'BUTTON' && target !== linkList.lastElementChild.children[0]) {
-      end = parseInt(target.innerText) * 9;
-      start = end - 9;
+      end = parseInt(target.innerText) * 8;
+      start = end - 8;
       showPage();
    } else {
       end = objArray.length - 1;
