@@ -193,14 +193,16 @@ linkList.addEventListener('click', (e) => {
    if( target.tagName === 'BUTTON' && target !== linkList.lastElementChild.children[0]) {
       end = parseInt(target.innerText) * 8;
       start = end - 8;
+      removeActive();
       showPage();
-   } else {
+      target.className = 'active';
+   } else if (target.tagName === 'BUTTON'){
       end = objArray.length - 1;
       start = parseInt(target.innerText) * 9 - 9;
       showPage();
+      removeActive();
+      target.className = 'active';
    }
-   removeActive();
-   target.className = 'active';
 });
 
 search.addEventListener('keyup', searchFeature);
