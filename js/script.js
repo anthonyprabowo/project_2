@@ -84,7 +84,7 @@ function showCard() {
          end = objArray.length - 1
       } else {
          start = 0;
-         end = 9;
+         end = 8;
       }
 }
 
